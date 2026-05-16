@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 2rem;">
+    <div class="card" style="max-width: 550px; width: 100%;" data-aos="fade-up">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <div style="width: 70px; height: 70px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-user-plus fa-2x" style="color: white;"></i>
+                </div>
+                <h2 style="color: var(--primary-dark);">Criar Conta</h2>
+                <p class="text-muted">Junte-se à comunidade NaMão</p>
+            </div>
+
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label">Nome completo</label>
+                        {{ form.name(class="form-control", placeholder="Seu nome") }}
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label">E-mail</label>
+                        {{ form.email(class="form-control", placeholder="seu@email.com") }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">WhatsApp</label>
+                        {{ form.telefone(class="form-control", placeholder="11999999999") }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Bairro</label>
+                        {{ form.bairro(class="form-control", placeholder="Seu bairro") }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Senha</label>
+                        {{ form.password(class="form-control", placeholder="••••••") }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Confirmar senha</label>
+                        {{ form.confirm_password(class="form-control", placeholder="••••••") }}
+                    </div>
+                </div>
+
+                <div class="mb-3 form-check">
+                    {{ form.accept_terms(class="form-check-input", id="terms") }}
+                    <label class="form-check-label" for="terms">
+                        Aceito os <a href="#" style="color: var(--primary);">Termos de Uso</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-user-plus"></i> Cadastrar
+                </button>
+            </form>
+
+            <hr class="my-4">
+
+            <div class="text-center">
+                <p class="mb-0">Já tem conta? <a href="{{ url_for('login') }}" style="color: var(--primary);">Faça login</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

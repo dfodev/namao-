@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="filters-card" data-aos="fade-up">
+    <h3 class="mb-3"><i class="fas fa-search"></i> Busca Avançada</h3>
+    <form method="GET" class="row g-3">
+        <div class="col-md-3">
+            <input type="text" name="bairro" class="form-control" placeholder="Bairro..." value="{{ bairro }}">
+        </div>
+        <div class="col-md-3">
+            <select name="categoria" class="form-select">
+                {% for cat in categorias %}
+                    <option value="{{ cat }}" {% if categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="preco_min" class="form-control" placeholder="Preço min" value="{{ preco_min }}">
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="preco_max" class="form-control" placeholder="Preço max" value="{{ preco_max }}">
+        </div>
+        <div class="col-md-2">
+            <select name="ordenar" class="form-select">
+                <option value="">Ordenar por</option>
+                <option value="preco_asc" {% if ordenar == 'preco_asc' %}selected{% endif %}>Menor preço</option>
+                <option value="preco_desc" {% if ordenar == 'preco_desc' %}selected{% endif %}>Maior preço</option>
+                <option value="avaliacao" {% if ordenar == 'avaliacao' %}selected{% endif %}>Melhor avaliação</option>
+            </select>
+        </div>
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-filter"></i> Buscar
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="row">
+    {% if servicos %}
+        {% for servico in servicos %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ servico.owner.name }}</h5>
+                        <p class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ servico.owner.bairro }}</p>
+                        <p class="card-text">{{ servico.owner.bio[:80] }}...</p>
+                        <p><strong>{{ servico.preco_medio }}</strong></p>
+                        <a href="{{ url_for('perfil_publico', user_id=servico.owner.id) }}" class="btn btn-primary w-100">
+                            Ver perfil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">Nenhum resultado encontrado.</div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 2rem;">
+    <div class="card" style="max-width: 600px; width: 100%;" data-aos="fade-up">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <div style="width: 70px; height: 70px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-store fa-2x" style="color: white;"></i>
+                </div>
+                <h2 style="color: var(--primary-dark);">Torne-se um Prestador</h2>
+                <p class="text-muted">Ofereça seus serviços para sua comunidade</p>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                    <label class="form-label">Sobre você / Serviços</label>
+                    {{ form.bio(class="form-control", rows="4", placeholder="Conte sobre sua experiência, serviços que oferece...") }}
+                    <small class="text-muted">Máximo 500 caracteres</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Categoria</label>
+                    {{ form.categoria(class="form-select") }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Preço médio</label>
+                    {{ form.preco_medio(class="form-control", placeholder="Ex: R$ 80/hora ou R$ 150 por serviço") }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Foto de perfil (opcional)</label>
+                    <input type="file" name="profile_image" accept="image/*" class="form-control" id="profileImage">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Formatos: PNG, JPG, JPEG, GIF, WEBP, BMP e mais. Máx 20MB
+                    </small>
+                    <div id="imagePreview" class="mt-2" style="display: none;">
+                        <img id="previewImg" src="#" alt="Preview" style="max-width: 150px; max-height: 150px; border-radius: 10px;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-check-circle"></i> Começar a vender
+                </button>
+            </form>
+
+            <hr class="my-4">
+
+            <div class="text-center">
+                <p class="text-muted small">
+                    <i class="fas fa-shield-alt"></i> Ao se cadastrar, você concorda com nossos
+                    <a href="#" style="color: var(--primary);">Termos de Uso</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos adicionais para o formulário */
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(27, 152, 224, 0.25);
+}
+
+#imagePreview {
+    text-align: center;
+    padding: 10px;
+    background: var(--light);
+    border-radius: 10px;
+}
+
+#previewImg {
+    border: 2px solid var(--primary);
+    padding: 3px;
+}
+</style>
+
+<script>
+// Preview da imagem antes do upload
+document.getElementById('profileImage')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const previewDiv = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+
+    if (file) {
+        // Verifica o tamanho do arquivo (max 20MB)
+        if (file.size > 20 * 1024 * 1024) {
+            alert('Arquivo muito grande! Máximo 20MB.');
+            this.value = '';
+            previewDiv.style.display = 'none';
+            return;
+        }
+
+        // Verifica se é imagem
+        if (!file.type.startsWith('image/')) {
+            alert('Por favor, selecione um arquivo de imagem válido.');
+            this.value = '';
+            previewDiv.style.display = 'none';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewDiv.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    } else {
+        previewDiv.style.display = 'none';
+        previewImg.src = '#';
+    }
+});
+
+// Validação do formulário antes de enviar
+document.querySelector('form').addEventListener('submit', function(e) {
+    const bio = document.querySelector('textarea[name="bio"]').value;
+    const preco = document.querySelector('input[name="preco_medio"]').value;
+
+    if (bio.length < 10) {
+        e.preventDefault();
+        alert('Por favor, descreva melhor seus serviços (mínimo 10 caracteres).');
+        return false;
+    }
+
+    if (!preco || preco.trim() === '') {
+        e.preventDefault();
+        alert('Por favor, informe um preço médio para seus serviços.');
+        return false;
+    }
+
+    return true;
+});
+</script>
+{% endblock %}

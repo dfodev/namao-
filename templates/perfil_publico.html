@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center border-0 shadow-sm mb-4">
+                <div class="card-body py-4">
+                    {% set avatar = user.profile_image if user.profile_image else 'default-avatar.png' %}
+                    <img src="{{ url_for('static', filename=avatar) }}"
+                         alt="{{ user.name }}"
+                         class="rounded-circle mb-3"
+                         style="width: 150px; height: 150px; object-fit: cover; border: 3px solid var(--primary);">
+
+                    <h3 class="fw-bold">{{ user.name }}</h3>
+                    {% if user.trust_seal %}
+                        <span class="badge bg-success mb-2 px-3 py-2 rounded-pill">
+                            <i class="fas fa-shield-alt me-1"></i> Verificado
+                        </span>
+                    {% endif %}
+
+                    <p class="text-muted small mt-2">
+                        <i class="fas fa-map-marker-alt me-1"></i> {{ user.bairro }}
+                    </p>
+
+                    <div class="rating mb-3">
+                        {% for i in range(5) %}
+                            {% if i < user.avg_rating|int %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% elif i < user.avg_rating %}
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="text-muted small d-block mt-1">({{ user.total_reviews }} avaliações)</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="https://wa.me/{{ user.telefone }}?text=Ol%C3%A1%2C%20vi%20seu%20perfil%20no%20NaM%C3%A3o%20e%20gostaria%20de%20um%20or%C3%A7amento."
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           id="btn-whatsapp-contact"
+                           data-provider-id="{{ user.id }}"
+                           class="btn btn-success fw-bold py-2">
+                            <i class="fab fa-whatsapp me-2"></i> Falar agora
+                        </a>
+
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.id != user.id %}
+                                <button type="button"
+                                        id="btn-favorite"
+                                        data-provider-id="{{ user.id }}"
+                                        class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-primary{% endif %} py-2">
+                                    <span id="favorite-icon-container">
+                                        {% if is_favorite %}
+                                            <i class="fas fa-heart text-danger me-1"></i>
+                                        {% else %}
+                                            <i class="far fa-heart me-1"></i>
+                                        {% endif %}
+                                    </span>
+                                    <span id="favorite-text">
+                                        {% if is_favorite %}Favoritado{% else %}Favoritar{% endif %}
+                                    </span>
+                                </button>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary py-2">
+                                <i class="far fa-heart me-1"></i> Adicionar aos favoritos
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-user-circle me-2"></i> Sobre</h4>
+                    <p class="text-muted" style="line-height: 1.6;">{{ user.bio or 'Nenhuma descrição fornecida pelo profissional.' }}</p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-briefcase me-2"></i> Serviços</h4>
+                    <div class="row">
+                        <div class="col-sm-6 mb-2">
+                            <p class="mb-1"><strong>Categoria:</strong> <span class="text-muted">{{ service.categoria }}</span></p>
+                        </div>
+                        <div class="col-sm-6 mb-2">
+                            <p class="mb-1"><strong>Preço médio:</strong> <span class="text-muted">{{ service.preco_medio }}</span></p>
+                        </div>
+                        {% if service.experiencia %}
+                        <div class="col-sm-6 mb-2">
+                            <p class="mb-1"><strong>Experiência:</strong> <span class="text-muted">{{ service.experiencia }} anos</span></p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if portfolio %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-images me-2"></i> Portfólio</h4>
+                    <div class="row">
+                        {% for img in portfolio %}
+                            <div class="col-md-4 col-6 mb-3">
+                                <div class="position-relative overflow-hidden rounded shadow-sm">
+                                    <img src="{{ url_for('static', filename=img.image_path) }}"
+                                         alt="{{ img.title }}"
+                                         class="img-fluid"
+                                         style="height: 150px; width: 100%; object-fit: cover;">
+                                </div>
+                                {% if img.title %}
+                                    <small class="text-muted d-block mt-1 text-center">{{ img.title }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title fw-bold text-secondary mb-0"><i class="fas fa-star me-2"></i> Avaliações</h4>
+
+                        {% if current_user.is_authenticated and current_user.id != user.id %}
+                            <button type="button" class="btn btn-primary btn-sm px-3 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAvaliacao">
+                                <i class="fas fa-pen me-2"></i>Avaliar Serviço
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-dark">{{ review.reviewer.name }}</strong>
+                                    <div class="rating-stars">
+                                        {% for i in range(5) %}
+                                            {% if i < review.rating %}
+                                                <i class="fas fa-star text-warning small"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning small"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mb-2">{{ review.created_at.strftime('%d/%m/%Y') }}</small>
+                                <p class="text-secondary mb-0 font-italic">"{{ review.comment or 'Avaliou com estrelas sem deixar comentário por escrito.' }}"</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">Nenhuma avaliação recebida ainda por este profissional.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAvaliacao" tabindex="-1" aria-labelledby="modalAvaliacaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow border-0 rounded-3">
+            <div class="modal-header bg-light border-0 py-3">
+                <h5 class="modal-title fw-bold text-dark" id="modalAvaliacaoLabel">Avaliar Serviço de {{ user.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="{{ url_for('avaliar', provider_id=user.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="modal-body py-4">
+                    <div class="text-center mb-4">
+                        <label class="form-label d-block fw-bold text-muted mb-2">Sua Nota:</label>
+                        <div class="star-rating-wrapper fs-1 mb-2">
+                            <input type="hidden" name="rating" id="rating-value" value="0" required>
+
+                            <i class="far fa-star star-btn mx-1" data-value="1" style="cursor: pointer; color: #ffc107;"></i>
+                            <i class="far fa-star star-btn mx-1" data-value="2" style="cursor: pointer; color: #ffc107;"></i>
+                            <i class="far fa-star star-btn mx-1" data-value="3" style="cursor: pointer; color: #ffc107;"></i>
+                            <i class="far fa-star star-btn mx-1" data-value="4" style="cursor: pointer; color: #ffc107;"></i>
+                            <i class="far fa-star star-btn mx-1" data-value="5" style="cursor: pointer; color: #ffc107;"></i>
+                        </div>
+                        <small class="text-muted" id="rating-text">Escolha de 1 a 5 estrelas</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="comment" class="form-label fw-bold text-muted">Feedback por extenso (Opcional):</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Como foi o atendimento, pontualidade e qualidade do serviço?..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-4" id="btn-enviar-avaliacao" disabled>Enviar Avaliação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // --- 1. CONFIGURAÇÃO GLOBAL DO CSRF TOKEN PARA AJAX ---
+    const csrfToken = document.getElementById('csrf_token')?.value;
+    const requestHeaders = {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+    };
+
+    // --- 2. LÓGICA DE SELEÇÃO DINÂMICA DE ESTRELAS (MODAL) ---
+    const stars = document.querySelectorAll('.star-btn');
+    const ratingInput = document.getElementById('rating-value');
+    const ratingText = document.getElementById('rating-text');
+    const submitBtn = document.getElementById('btn-enviar-avaliacao');
+
+    const labels = {
+        1: "Péssimo atendimento",
+        2: "Serviço insatisfatório",
+        3: "Regular / Aceitável",
+        4: "Muito bom profissional",
+        5: "Excelente! Recomendo com certeza"
+    };
+
+    stars.forEach(star => {
+        star.addEventListener('mouseover', function() {
+            const hoverValue = this.getAttribute('data-value');
+            highlightStars(hoverValue);
+        });
+
+        star.addEventListener('mouseout', function() {
+            const currentValue = ratingInput.value;
+            highlightStars(currentValue);
+        });
+
+        star.addEventListener('click', function() {
+            const clickValue = this.getAttribute('data-value');
+            ratingInput.value = clickValue;
+            ratingText.innerText = labels[clickValue];
+            ratingText.className = "fw-bold text-warning";
+            submitBtn.removeAttribute('disabled');
+        });
+    });
+
+    function highlightStars(value) {
+        stars.forEach(star => {
+            const starValue = star.getAttribute('data-value');
+            if (starValue <= value) {
+                star.classList.replace('far', 'fas');
+            } else {
+                star.classList.replace('fas', 'far');
+            }
+        });
+    }
+
+    // --- 3. LÓGICA DE FAVORITAR VIA REQUISIÇÃO ASSÍNCRONA (AJAX) ---
+    const btnFavorite = document.getElementById('btn-favorite');
+    if (btnFavorite) {
+        btnFavorite.addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            const providerId = this.getAttribute('data-provider-id');
+            const iconContainer = document.getElementById('favorite-icon-container');
+            const txtLabel = document.getElementById('favorite-text');
+
+            try {
+                btnFavorite.disabled = true;
+
+                const response = await fetch(`/favoritar/${providerId}`, {
+                    method: 'POST',
+                    headers: requestHeaders
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    if (data.action === 'added') {
+                        this.classList.replace('btn-outline-primary', 'btn-danger');
+                        iconContainer.innerHTML = '<i class="fas fa-heart text-danger me-1"></i>';
+                        txtLabel.textContent = 'Favoritado';
+                    } else if (data.action === 'removed') {
+                        this.classList.replace('btn-danger', 'btn-outline-primary');
+                        iconContainer.innerHTML = '<i class="far fa-heart me-1"></i>';
+                        txtLabel.textContent = 'Favoritar';
+                    }
+                } else {
+                    alert(data.message || 'Ocorreu um erro ao atualizar seus favoritos.');
+                }
+            } catch (error) {
+                console.error('Erro na requisição assíncrona de favorito:', error);
+                alert('Erro de conexão com o servidor.');
+            } finally {
+                btnFavorite.disabled = false;
+            }
+        });
+    }
+
+    // --- 4. LÓGICA DE HISTÓRICO: REGISTRO DE CONTATO (WHATSAPP) ---
+    const btnWhatsapp = document.getElementById('btn-whatsapp-contact');
+    if (btnWhatsapp) {
+        btnWhatsapp.addEventListener('click', async function(e) {
+            const providerId = this.getAttribute('data-provider-id');
+
+            try {
+                fetch(`/registrar_contato/${providerId}`, {
+                    method: 'POST',
+                    headers: requestHeaders
+                }).then(response => {
+                    if (!response.ok) {
+                        console.warn('O servidor retornou um status não-200 no histórico de contato.');
+                    }
+                });
+            } catch (error) {
+                console.error('Falha de rede ao tentar registrar métrica de contato:', error);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

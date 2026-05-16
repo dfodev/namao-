@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2><i class="fas fa-shield-alt"></i> Painel Administrativo</h2>
+    <p class="text-muted">Bem-vindo, Administrador!</p>
+
+    <div class="row mt-4">
+        <!-- Denúncias Pendentes -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">Denúncias Pendentes</h4>
+                </div>
+                <div class="card-body">
+                    {% if pending_reports %}
+                        {% for report in pending_reports %}
+                            <div class="border-bottom mb-2 pb-2">
+                                <p><strong>Denunciante:</strong> {{ report.reporter.name }}</p>
+                                <p><strong>Denunciado:</strong> {{ report.reported.name }}</p>
+                                <p><strong>Motivo:</strong> {{ report.reason }}</p>
+                                <p><strong>Descrição:</strong> {{ report.description[:100] }}</p>
+                                <a href="{{ url_for('perfil_publico', user_id=report.reported_id) }}" class="btn btn-sm btn-primary">Ver perfil</a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Nenhuma denúncia pendente</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Avaliações Pendentes -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-info">
+                    <h4 class="mb-0">Avaliações Pendentes</h4>
+                </div>
+                <div class="card-body">
+                    {% if pending_reviews %}
+                        {% for review in pending_reviews %}
+                            <div class="border-bottom mb-2 pb-2">
+                                <p><strong>Profissional:</strong> {{ review.provider.name }}</p>
+                                <p><strong>Avaliador:</strong> {{ review.reviewer.name }}</p>
+                                <p><strong>Nota:</strong> {{ review.rating }} ★</p>
+                                <p><strong>Comentário:</strong> {{ review.comment[:100] }}</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Nenhuma avaliação pendente</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Serviços para Aprovar -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Serviços para Aprovar</h4>
+                </div>
+                <div class="card-body">
+                    {% if pending_services %}
+                        {% for service in pending_services %}
+                            <div class="border-bottom mb-2 pb-2">
+                                <p><strong>Profissional:</strong> {{ service.owner.name }}</p>
+                                <p><strong>Categoria:</strong> {{ service.categoria }}</p>
+                                <p><strong>Preço:</strong> {{ service.preco_medio }}</p>
+                                <a href="{{ url_for('aprovar_servico', service_id=service.id) }}" class="btn btn-sm btn-success">Aprovar</a>
+                                <a href="{{ url_for('perfil_publico', user_id=service.user_id) }}" class="btn btn-sm btn-primary">Ver perfil</a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Nenhum serviço pendente</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

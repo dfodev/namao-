@@ -1,0 +1,669 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-header">
+                <h1><i class="fas fa-chart-line"></i> Meu Dashboard</h1>
+                <p class="text-muted">Bem-vindo(a), {{ current_user.name }}!</p>
+            </div>
+        </div>
+    </div>
+
+    {% if current_user.is_provider %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h5 class="fw-bold mb-0 text-secondary">
+                            <i class="fas fa-chart-line me-2 text-primary"></i> Desempenho do Perfil
+                        </h5>
+                        <div class="bg-light px-3 py-2 rounded">
+                            <span class="small text-muted">Total de Acessos:</span>
+                            <strong class="text-dark fs-5 ml-1">{{ total_views }}</strong>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-muted mb-3 small uppercase tracking-wider">Últimas Visitas ao seu Perfil</h6>
+
+                    {% if recent_visitors %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Usuário / Origem</th>
+                                        <th>Tipo de Acesso</th>
+                                        <th>Data e Horário</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for view in recent_visitors %}
+                                    <tr>
+                                        <td>
+                                            {% if view.viewer %}
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-user-circle text-primary fs-5 me-2"></i>
+                                                    <div>
+                                                        <span class="fw-bold d-block text-dark">{{ view.viewer.name }}</span>
+                                                        <small class="text-muted">{{ view.viewer.bairro }}</small>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-user-secret text-secondary fs-5 me-2"></i>
+                                                    <div>
+                                                        <span class="text-muted fw-semibold">Usuário Não Logado</span>
+                                                        <small class="text-muted d-block">IP: {{ view.viewer_ip[:10] }}***</small>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if view.viewer %}
+                                                <span class="badge bg-light-primary text-primary px-2.5 py-1 rounded">Cliente Cadastrado</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-secondary px-2.5 py-1 rounded">Visitante Anônimo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-secondary small">
+                                            <i class="far fa-clock me-1"></i> {{ view.viewed_at.strftime('%d/%m/%Y às %H:%M') }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 bg-light rounded">
+                            <p class="text-muted mb-0 small">Nenhuma visualização registrada recentemente fora do seu próprio usuário.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mb-4">
+        {% if current_user.is_provider %}
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-primary">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ total_views }}</h3> <p>Visualizações</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-success">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ current_user.total_favorites }}</h3>
+                        <p>Favoritos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-warning">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ "%.1f"|format(current_user.avg_rating) }}</h3>
+                        <p>Avaliação média</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-info">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ current_user.total_contacts }}</h3>
+                        <p>Contatos</p>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-primary">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ favorites|length }}</h3>
+                        <p>Favoritos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-success">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ my_reviews|length }}</h3>
+                        <p>Avaliações feitas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-info">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ contacts|length }}</h3>
+                        <p>Contatos realizados</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+                <div class="card-header-custom">
+                    <i class="fas fa-user-circle"></i>
+                    <h3>Meu Perfil</h3>
+                </div>
+                <div class="card-body-custom text-center">
+                    {% set avatar = current_user.profile_image if current_user.profile_image else 'default-avatar.png' %}
+                    <img src="{{ url_for('static', filename=avatar) }}"
+                         alt="Foto de perfil"
+                         class="profile-avatar-lg mb-3"
+                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?background=1B98E0&color=fff&name={{ current_user.name[0] }}'">
+
+                    <h4>{{ current_user.name }}</h4>
+                    <p class="text-muted">
+                        <i class="fas fa-map-marker-alt"></i> {{ current_user.bairro }}
+                    </p>
+
+                    {% if current_user.is_provider %}
+                        <span class="badge bg-primary mb-2">
+                            <i class="fas fa-briefcase"></i> {{ service.categoria }}
+                        </span>
+                        {% if current_user.trust_seal %}
+                            <span class="trust-seal">
+                                <i class="fas fa-shield-alt"></i> Verificado
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="badge bg-secondary mb-2">
+                            <i class="fas fa-user"></i> Cliente
+                        </span>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <button class="btn btn-primary btn-sm w-100" onclick="openEditProfileModal()">
+                            <i class="fas fa-edit"></i> Editar Perfil
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-4">
+            {% if current_user.is_provider %}
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
+                        <i class="fas fa-store"></i>
+                        <h3>Meus Serviços</h3>
+                        <button class="btn btn-sm btn-outline-primary ms-auto" onclick="openEditServiceModal()">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="service-info">
+                            <div class="info-row">
+                                <span class="label">Status:</span>
+                                <span class="value">
+                                    {% if service.is_available %}
+                                        <span class="badge bg-success">Disponível</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Indisponível</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Categoria:</span>
+                                <span class="value">{{ service.categoria }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Preço médio:</span>
+                                <span class="value">{{ service.preco_medio }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Bio:</span>
+                                <span class="value">{{ current_user.bio[:100] }}{% if current_user.bio|length > 100 %}...{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <a href="{{ url_for('toggle_availability') }}" class="btn btn-outline-primary w-100">
+                                {% if service.is_available %}
+                                    <i class="fas fa-eye-slash"></i> Ficar Indisponível
+                                {% else %}
+                                    <i class="fas fa-eye"></i> Ficar Disponível
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card mt-4">
+                    <div class="card-header-custom">
+                        <i class="fas fa-images"></i>
+                        <h3>Meu Portfólio</h3>
+                        <button class="btn btn-sm btn-primary ms-auto" onclick="openPortfolioModal()">
+                            <i class="fas fa-plus"></i> Adicionar Fotos
+                        </button>
+                    </div>
+                    <div class="card-body-custom">
+                        {% if portfolio %}
+                            <div class="portfolio-grid">
+                                {% for image in portfolio %}
+                                <div class="portfolio-item">
+                                    <img src="{{ url_for('static', filename=image.image_path) }}" alt="{{ image.title }}">
+                                    <div class="portfolio-overlay">
+                                        <button class="btn btn-sm btn-warning"
+                                                onclick="editPortfolioImage({{ image.id }}, '{{ image.title }}', '{{ image.description }}')"
+                                                title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        {% if not image.is_primary %}
+                                            <a href="{{ url_for('set_primary_portfolio', image_id=image.id) }}"
+                                               class="btn btn-sm btn-info" title="Destacar">
+                                                <i class="fas fa-star"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="badge bg-warning"><i class="fas fa-star"></i> Destaque</span>
+                                        {% endif %}
+                                        <a href="{{ url_for('delete_portfolio', image_id=image.id) }}"
+                                           class="btn btn-sm btn-danger" onclick="return confirm('Remover esta imagem?')"
+                                           title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                    {% if image.title %}
+                                        <div class="portfolio-caption">{{ image.title[:30] }}</div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-images fa-3x text-muted"></i>
+                                <p>Seu portfólio está vazio</p>
+                                <button class="btn btn-primary btn-sm" onclick="openPortfolioModal()">
+                                    <i class="fas fa-plus"></i> Adicionar suas primeiras fotos
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
+                        <i class="fas fa-heart"></i>
+                        <h3>Profissionais Favoritos</h3>
+                        <a href="{{ url_for('meus_favoritos') }}" class="btn btn-sm btn-outline-primary ms-auto">
+                            Ver todos
+                        </a>
+                    </div>
+                    <div class="card-body-custom">
+                        {% if favorites %}
+                            <div class="favorites-list">
+                                {% for fav in favorites[:3] %}
+                                <div class="favorite-item">
+                                    <img src="{{ url_for('static', filename=fav.provider.profile_image or 'default-avatar.png') }}"
+                                         alt="{{ fav.provider.name }}" class="favorite-avatar">
+                                    <div class="favorite-info">
+                                        <strong>{{ fav.provider.name }}</strong>
+                                        <p class="text-muted small">{{ fav.provider.categoria }}</p>
+                                    </div>
+                                    <a href="{{ url_for('perfil_publico', user_id=fav.provider_id) }}" class="btn btn-sm btn-primary">
+                                        Ver perfil
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if favorites|length > 3 %}
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">+ {{ favorites|length - 3 }} favoritos</small>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-heart fa-2x text-muted"></i>
+                                <p>Você ainda não tem favoritos</p>
+                                <a href="{{ url_for('index') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-search"></i> Encontrar profissionais
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="dashboard-card mt-4">
+                    <div class="card-header-custom">
+                        <i class="fas fa-history"></i>
+                        <h3>Últimos Contatos</h3>
+                        <a href="{{ url_for('meus_favoritos') }}" class="btn btn-sm btn-outline-primary ms-auto">
+                            Ver todos
+                        </a>
+                    </div>
+                    <div class="card-body-custom">
+                        {% if contacts %}
+                            <div class="contacts-list">
+                                {% for contact in contacts[:5] %}
+                                <div class="contact-item">
+                                    <div class="contact-info">
+                                        <strong>{{ contact.provider.name }}</strong>
+                                        <p class="text-muted small">{{ contact.contacted_at.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                    </div>
+                                    <a href="{{ url_for('perfil_publico', user_id=contact.provider_id) }}" class="btn btn-sm btn-outline-primary">
+                                        Ver perfil
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-phone-alt fa-2x text-muted"></i>
+                                <p>Você ainda não entrou em contato com nenhum profissional</p>
+                                <a href="{{ url_for('index') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-search"></i> Encontrar profissionais
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="dashboard-card mt-4">
+                    <div class="card-header-custom">
+                        <i class="fas fa-star"></i>
+                        <h3>Minhas Avaliações</h3>
+                    </div>
+                    <div class="card-body-custom">
+                        {% if my_reviews %}
+                            <div class="reviews-list">
+                                {% for review in my_reviews[:3] %}
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <strong>{{ review.provider.name }}</strong>
+                                        <div class="rating">
+                                            {% for i in range(5) %}
+                                                {% if i < review.rating %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <p class="review-comment">{{ review.comment[:100] }}{% if review.comment|length > 100 %}...{% endif %}</p>
+                                    <small class="text-muted">{{ review.created_at.strftime('%d/%m/%Y') }}</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-star fa-2x text-muted"></i>
+                                <p>Você ainda não fez nenhuma avaliação</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div id="editProfileModal" class="modal-custom">
+    <div class="modal-custom-content">
+        <div class="modal-custom-header">
+            <h5><i class="fas fa-user-edit"></i> Editar Perfil</h5>
+            <button class="close-modal" onclick="closeModal('editProfileModal')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('update_profile') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-custom-body">
+                <div class="mb-3">
+                    <label>Bio</label>
+                    <textarea name="bio" class="form-control" rows="4">{{ current_user.bio or '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label>Bairro</label>
+                    <input type="text" name="bairro" class="form-control" value="{{ current_user.bairro or '' }}">
+                </div>
+                <div class="mb-3">
+                    <label>WhatsApp</label>
+                    <input type="tel" name="telefone" class="form-control" value="{{ current_user.telefone or '' }}" placeholder="11999999999">
+                </div>
+                {% if current_user.is_provider %}
+                <div class="mb-3">
+                    <label>Preço médio</label>
+                    <input type="text" name="preco_medio" class="form-control" value="{{ service.preco_medio or '' }}" placeholder="Ex: R$ 80/hora">
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-custom-footer">
+                <button type="button" class="btn btn-outline-secondary" onclick="closeModal('editProfileModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="portfolioModal" class="modal-custom">
+    <div class="modal-custom-content">
+        <div class="modal-custom-header">
+            <h5><i class="fas fa-upload"></i> Adicionar ao Portfólio</h5>
+            <button class="close-modal" onclick="closeModal('portfolioModal')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('upload_portfolio') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-custom-body">
+                <div class="mb-3">
+                    <label>Imagens (múltiplas)</label>
+                    <input type="file" name="portfolio_images" accept="image/*" multiple class="form-control" required>
+                    <small class="text-muted">Formatos: PNG, JPG, JPEG, GIF, WEBP. Máx 20MB</small>
+                </div>
+                <div class="mb-3">
+                    <label>Título (opcional)</label>
+                    <input type="text" name="title" class="form-control" placeholder="Ex: Reforma completa">
+                </div>
+                <div class="mb-3">
+                    <label>Descrição (opcional)</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="Descreva o trabalho..."></textarea>
+                </div>
+                <div id="imagePreview" class="image-preview"></div>
+            </div>
+            <div class="modal-custom-footer">
+                <button type="button" class="btn btn-outline-secondary" onclick="closeModal('portfolioModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Enviar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editPortfolioModal" class="modal-custom">
+    <div class="modal-custom-content">
+        <div class="modal-custom-header">
+            <h5><i class="fas fa-edit"></i> Editar Imagem do Portfólio</h5>
+            <button class="close-modal" onclick="closeModal('editPortfolioModal')">&times;</button>
+        </div>
+        <form method="POST" action="" id="editPortfolioForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-custom-body">
+                <div class="mb-3">
+                    <label>Título</label>
+                    <input type="text" name="title" id="edit_title" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label>Descrição</label>
+                    <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-custom-footer">
+                <button type="button" class="btn btn-outline-secondary" onclick="closeModal('editPortfolioModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .dashboard-header { margin-bottom: 1.5rem; }
+    .dashboard-header h1 { font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 0.25rem; }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: var(--shadow);
+        transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+
+    .stat-icon {
+        width: 50px; height: 50px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 1.5rem;
+    }
+    .stat-icon.bg-primary { background: var(--primary); }
+    .stat-icon.bg-success { background: var(--success); }
+    .stat-icon.bg-warning { background: var(--warning); }
+    .stat-icon.bg-info { background: var(--primary-light); }
+
+    .stat-info h3 { font-size: 1.5rem; font-weight: bold; margin: 0; color: var(--dark); }
+    .stat-info p { margin: 0; color: var(--gray); font-size: 0.8rem; }
+
+    .dashboard-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: var(--shadow); }
+    .card-header-custom { background: var(--primary-dark); color: white; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+    .card-header-custom h3 { margin: 0; font-size: 1.1rem; }
+    .card-body-custom { padding: 1.25rem; }
+
+    .profile-avatar-lg { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
+
+    .info-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #eee; }
+    .info-row .label { font-weight: 600; color: var(--gray); }
+    .info-row .value { color: var(--dark); }
+
+    .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+    .portfolio-item { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 1; background: var(--light); cursor: pointer; }
+    .portfolio-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+    .portfolio-item:hover img { transform: scale(1.05); }
+    .portfolio-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity 0.3s; }
+    .portfolio-item:hover .portfolio-overlay { opacity: 1; }
+    .portfolio-caption { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.7); color: white; padding: 5px; font-size: 0.7rem; text-align: center; }
+
+    .favorites-list, .contacts-list, .reviews-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .favorite-item, .contact-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--light); border-radius: 10px; }
+    .favorite-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+    .favorite-info { flex: 1; }
+    .favorite-info strong { display: block; }
+
+    .review-item { padding: 0.75rem; background: var(--light); border-radius: 10px; }
+    .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .review-comment { margin-bottom: 0.5rem; font-size: 0.9rem; }
+
+    .empty-state { text-align: center; padding: 2rem; }
+    .empty-state i { margin-bottom: 1rem; }
+    .empty-state p { color: var(--gray); margin-bottom: 1rem; }
+
+    .image-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1rem; }
+    .image-preview img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
+
+    @media (max-width: 768px) {
+        .portfolio-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+        .stat-card { padding: 0.75rem; }
+        .stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+        .stat-info h3 { font-size: 1.2rem; }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Preview em tempo real de múltiplas imagens anexadas
+    document.querySelector('input[name="portfolio_images"]')?.addEventListener('change', function (e) {
+        const preview = document.getElementById('imagePreview');
+        if (preview) {
+            preview.innerHTML = '';
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    });
+});
+
+// Funções globais de manipulação e controle dos modais da página
+function openEditProfileModal() {
+    document.getElementById('editProfileModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function openPortfolioModal() {
+    document.getElementById('portfolioModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function editPortfolioImage(imageId, title, description) {
+    const form = document.getElementById('editPortfolioForm');
+    form.action = `/editar-portfolio/${imageId}`;
+    document.getElementById('edit_title').value = title || '';
+    document.getElementById('edit_description').value = description || '';
+    document.getElementById('editPortfolioModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Evento de fechamento: Clicar na área cinza de fundo (overlay)
+window.onclick = function (event) {
+    if (event.target.classList.contains('modal-custom')) {
+        event.target.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Evento de fechamento: Pressionar a tecla ESC do teclado
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-custom').forEach(modal => {
+            modal.style.display = 'none';
+        });
+        document.body.style.overflow = 'auto';
+    }
+});
+</script>
+{% endblock %}
