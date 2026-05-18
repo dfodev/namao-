@@ -1,77 +1,155 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h2><i class="fas fa-shield-alt"></i> Painel Administrativo</h2>
-    <p class="text-muted">Bem-vindo, Administrador!</p>
-
-    <div class="row mt-4">
-        <!-- Denúncias Pendentes -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h4 class="mb-0">Denúncias Pendentes</h4>
+<div class="container py-5">
+    <!-- ==============================================
+         CABEÇALHO
+         ============================================== -->
+    <div class="row mb-5" data-aos="fade-up">
+        <div class="col-12">
+            <div class="dashboard-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 fw-bold text-dark">
+                        <i class="fas fa-shield-alt text-primary me-2"></i>Painel Administrativo
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Bem-vindo, <strong>Administrador</strong>. Gerencie denúncias, avaliações e aprovações.
+                    </p>
                 </div>
-                <div class="card-body">
+                <span class="badge bg-danger px-3 py-2 rounded-pill fs-6 shadow-sm">
+                    <i class="fas fa-crown me-1"></i> Acesso Restrito
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         CARDS DE MODERAÇÃO
+         ============================================== -->
+    <div class="row">
+        <!-- DENÚNCIAS PENDENTES -->
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex align-items-center">
+                    <div class="stat-icon bg-warning me-3" style="width: 45px; height: 45px; font-size: 1.2rem;">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0 text-dark">Denúncias Pendentes</h5>
+                </div>
+                <div class="card-body border-top">
                     {% if pending_reports %}
                         {% for report in pending_reports %}
-                            <div class="border-bottom mb-2 pb-2">
-                                <p><strong>Denunciante:</strong> {{ report.reporter.name }}</p>
-                                <p><strong>Denunciado:</strong> {{ report.reported.name }}</p>
-                                <p><strong>Motivo:</strong> {{ report.reason }}</p>
-                                <p><strong>Descrição:</strong> {{ report.description[:100] }}</p>
-                                <a href="{{ url_for('perfil_publico', user_id=report.reported_id) }}" class="btn btn-sm btn-primary">Ver perfil</a>
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <strong class="text-dark">
+                                        <i class="fas fa-user me-1"></i>{{ report.reporter.name }}
+                                    </strong>
+                                    <span class="badge bg-warning text-dark">Pendente</span>
+                                </div>
+                                <p class="small text-muted mb-1">
+                                    <strong>Denunciado:</strong> {{ report.reported.name }}
+                                </p>
+                                <p class="small text-muted mb-1">
+                                    <strong>Motivo:</strong> {{ report.reason }}
+                                </p>
+                                <p class="small text-muted mb-2">
+                                    {{ report.description[:100] }}{% if report.description|length > 100 %}...{% endif %}
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('perfil_publico', user_id=report.reported_id) }}"
+                                       class="btn btn-sm btn-outline-primary rounded-pill">
+                                        <i class="fas fa-eye me-1"></i>Ver perfil
+                                    </a>
+                                    <a href="{{ url_for('bloquear_usuario', user_id=report.reported_id) }}"
+                                       class="btn btn-sm btn-outline-danger rounded-pill"
+                                       onclick="return confirm('Tem certeza que deseja BLOQUEAR este usuário?')">
+                                        <i class="fas fa-ban me-1"></i>Bloquear
+                                    </a>
+                                </div>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted">Nenhuma denúncia pendente</p>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+                            <p class="small mb-0">Nenhuma denúncia pendente</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Avaliações Pendentes -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header bg-info">
-                    <h4 class="mb-0">Avaliações Pendentes</h4>
+        <!-- AVALIAÇÕES PENDENTES -->
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex align-items-center">
+                    <div class="stat-icon bg-info me-3" style="width: 45px; height: 45px; font-size: 1.2rem;">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0 text-dark">Avaliações Pendentes</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body border-top">
                     {% if pending_reviews %}
                         {% for review in pending_reviews %}
-                            <div class="border-bottom mb-2 pb-2">
-                                <p><strong>Profissional:</strong> {{ review.provider.name }}</p>
-                                <p><strong>Avaliador:</strong> {{ review.reviewer.name }}</p>
-                                <p><strong>Nota:</strong> {{ review.rating }} ★</p>
-                                <p><strong>Comentário:</strong> {{ review.comment[:100] }}</p>
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <strong class="text-dark">{{ review.reviewer.name }}</strong>
+                                    <span class="text-warning">
+                                        {% for i in range(review.rating) %}★{% endfor %}
+                                    </span>
+                                </div>
+                                <p class="small text-muted mb-1">
+                                    <strong>Profissional:</strong> {{ review.provider.name }}
+                                </p>
+                                <p class="small text-muted mb-2">
+                                    {{ review.comment[:100] }}{% if review.comment|length > 100 %}...{% endif %}
+                                </p>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted">Nenhuma avaliação pendente</p>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+                            <p class="small mb-0">Nenhuma avaliação pendente</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Serviços para Aprovar -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h4 class="mb-0">Serviços para Aprovar</h4>
+        <!-- SERVIÇOS PARA APROVAR -->
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex align-items-center">
+                    <div class="stat-icon bg-success me-3" style="width: 45px; height: 45px; font-size: 1.2rem;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0 text-dark">Serviços para Aprovar</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body border-top">
                     {% if pending_services %}
                         {% for service in pending_services %}
-                            <div class="border-bottom mb-2 pb-2">
-                                <p><strong>Profissional:</strong> {{ service.owner.name }}</p>
-                                <p><strong>Categoria:</strong> {{ service.categoria }}</p>
-                                <p><strong>Preço:</strong> {{ service.preco_medio }}</p>
-                                <a href="{{ url_for('aprovar_servico', service_id=service.id) }}" class="btn btn-sm btn-success">Aprovar</a>
-                                <a href="{{ url_for('perfil_publico', user_id=service.user_id) }}" class="btn btn-sm btn-primary">Ver perfil</a>
+                            <div class="border-bottom pb-3 mb-3">
+                                <p class="fw-bold text-dark mb-1">{{ service.owner.name }}</p>
+                                <p class="small text-muted mb-1">
+                                    <i class="fas fa-tag me-1"></i>{{ service.categoria }}
+                                </p>
+                                <p class="small text-success fw-bold mb-2">{{ service.preco_medio }}</p>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('aprovar_servico', service_id=service.id) }}"
+                                       class="btn btn-sm btn-success rounded-pill">
+                                        <i class="fas fa-check me-1"></i>Aprovar
+                                    </a>
+                                    <a href="{{ url_for('perfil_publico', user_id=service.user_id) }}"
+                                       class="btn btn-sm btn-outline-primary rounded-pill">
+                                        <i class="fas fa-eye me-1"></i>Ver perfil
+                                    </a>
+                                </div>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted">Nenhum serviço pendente</p>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+                            <p class="small mb-0">Nenhum serviço pendente</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>

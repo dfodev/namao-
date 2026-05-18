@@ -3,15 +3,20 @@
 {% block content %}
 <div class="container py-4">
     <div class="row">
+        <!-- ==============================================
+             COLUNA ESQUERDA - PERFIL DO PRESTADOR
+             ============================================== -->
         <div class="col-md-4 mb-4">
             <div class="card text-center border-0 shadow-sm mb-4">
                 <div class="card-body py-4">
+                    <!-- Avatar -->
                     {% set avatar = user.profile_image if user.profile_image else 'default-avatar.png' %}
                     <img src="{{ url_for('static', filename=avatar) }}"
                          alt="{{ user.name }}"
                          class="rounded-circle mb-3"
                          style="width: 150px; height: 150px; object-fit: cover; border: 3px solid var(--primary);">
 
+                    <!-- Nome e Selo -->
                     <h3 class="fw-bold">{{ user.name }}</h3>
                     {% if user.trust_seal %}
                         <span class="badge bg-success mb-2 px-3 py-2 rounded-pill">
@@ -19,10 +24,12 @@
                         </span>
                     {% endif %}
 
+                    <!-- Bairro -->
                     <p class="text-muted small mt-2">
                         <i class="fas fa-map-marker-alt me-1"></i> {{ user.bairro }}
                     </p>
 
+                    <!-- Rating -->
                     <div class="rating mb-3">
                         {% for i in range(5) %}
                             {% if i < user.avg_rating|int %}
@@ -36,25 +43,35 @@
                         <span class="text-muted small d-block mt-1">({{ user.total_reviews }} avaliações)</span>
                     </div>
 
+                    <!-- Botões de Ação -->
                     <div class="d-grid gap-2">
-                        <a href="https://wa.me/{{ user.telefone }}?text=Ol%C3%A1%2C%20vi%20seu%20perfil%20no%20NaM%C3%A3o%20e%20gostaria%20de%20um%20or%C3%A7amento."
+                        <!-- Chamar WhatsApp -->
+                        <a href="/whatsapp-redirect/{{ user.id }}"
                            target="_blank"
                            rel="noopener noreferrer"
                            id="btn-whatsapp-contact"
                            data-provider-id="{{ user.id }}"
-                           class="btn btn-success fw-bold py-2">
-                            <i class="fab fa-whatsapp me-2"></i> Falar agora
+                           class="btn btn-success fw-bold py-2 rounded-pill">
+                            <i class="fab fa-whatsapp me-2"></i> Chamar
                         </a>
 
+                        <!-- Solicitar Orçamento -->
+                        <button class="btn btn-warning fw-bold py-2 rounded-pill"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalOrcamentoPerfil">
+                            <i class="fas fa-file-invoice-dollar me-2"></i> Solicitar Orçamento
+                        </button>
+
+                        <!-- Favoritar (apenas logado e não é o próprio perfil) -->
                         {% if current_user.is_authenticated %}
                             {% if current_user.id != user.id %}
                                 <button type="button"
                                         id="btn-favorite"
                                         data-provider-id="{{ user.id }}"
-                                        class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-primary{% endif %} py-2">
+                                        class="btn rounded-pill py-2 {% if is_favorite %}btn-danger{% else %}btn-outline-primary{% endif %}">
                                     <span id="favorite-icon-container">
                                         {% if is_favorite %}
-                                            <i class="fas fa-heart text-danger me-1"></i>
+                                            <i class="fas fa-heart me-1"></i>
                                         {% else %}
                                             <i class="far fa-heart me-1"></i>
                                         {% endif %}
@@ -63,9 +80,16 @@
                                         {% if is_favorite %}Favoritado{% else %}Favoritar{% endif %}
                                     </span>
                                 </button>
+
+                                <!-- Botão Denunciar -->
+                                <button class="btn btn-outline-danger btn-sm rounded-pill mt-2"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalDenuncia">
+                                    <i class="fas fa-flag me-1"></i> Denunciar
+                                </button>
                             {% endif %}
                         {% else %}
-                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary py-2">
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary py-2 rounded-pill">
                                 <i class="far fa-heart me-1"></i> Adicionar aos favoritos
                             </a>
                         {% endif %}
@@ -74,17 +98,28 @@
             </div>
         </div>
 
+        <!-- ==============================================
+             COLUNA DIREITA - CONTEÚDO DO PERFIL
+             ============================================== -->
         <div class="col-md-8">
+            <!-- SOBRE -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
-                    <h4 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-user-circle me-2"></i> Sobre</h4>
-                    <p class="text-muted" style="line-height: 1.6;">{{ user.bio or 'Nenhuma descrição fornecida pelo profissional.' }}</p>
+                    <h4 class="card-title fw-bold text-secondary mb-3">
+                        <i class="fas fa-user-circle me-2"></i> Sobre
+                    </h4>
+                    <p class="text-muted" style="line-height: 1.6;">
+                        {{ user.bio or 'Nenhuma descrição fornecida pelo profissional.' }}
+                    </p>
                 </div>
             </div>
 
+            <!-- SERVIÇOS -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
-                    <h4 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-briefcase me-2"></i> Serviços</h4>
+                    <h4 class="card-title fw-bold text-secondary mb-3">
+                        <i class="fas fa-briefcase me-2"></i> Serviços
+                    </h4>
                     <div class="row">
                         <div class="col-sm-6 mb-2">
                             <p class="mb-1"><strong>Categoria:</strong> <span class="text-muted">{{ service.categoria }}</span></p>
@@ -101,18 +136,55 @@
                 </div>
             </div>
 
+            <!-- DISPONIBILIDADE -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title fw-bold text-secondary mb-3">
+                        <i class="fas fa-calendar-alt me-2"></i> Disponibilidade
+                    </h4>
+                    {% set availability = user.availability %}
+                    <div class="row g-2">
+                        {% set dias = [
+                            ('segunda', 'Seg'),
+                            ('terca', 'Ter'),
+                            ('quarta', 'Qua'),
+                            ('quinta', 'Qui'),
+                            ('sexta', 'Sex'),
+                            ('sabado', 'Sáb'),
+                            ('domingo', 'Dom')
+                        ] %}
+                        {% for day_key, day_short in dias %}
+                            <div class="col-6 col-md-3">
+                                <div class="p-2 rounded text-center {% if availability and availability[day_key] %}bg-success bg-opacity-10 text-success{% else %}bg-light text-muted{% endif %}">
+                                    <i class="fas {% if availability and availability[day_key] %}fa-check-circle{% else %}fa-times-circle{% endif %} me-1"></i>
+                                    <span class="fw-bold small">{{ day_short }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <small class="text-muted d-block mt-3 text-center">
+                        <i class="fas fa-clock me-1"></i>
+                        Dias verdes: disponível | Dias cinzas: indisponível
+                    </small>
+                </div>
+            </div>
+
+            <!-- PORTFÓLIO -->
             {% if portfolio %}
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
-                    <h4 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-images me-2"></i> Portfólio</h4>
+                    <h4 class="card-title fw-bold text-secondary mb-3">
+                        <i class="fas fa-images me-2"></i> Portfólio
+                    </h4>
                     <div class="row">
                         {% for img in portfolio %}
                             <div class="col-md-4 col-6 mb-3">
                                 <div class="position-relative overflow-hidden rounded shadow-sm">
-                                    <img src="{{ url_for('static', filename=img.image_path) }}"
+                                    <img src="/static/uploads/{{ img.image_path }}"
                                          alt="{{ img.title }}"
                                          class="img-fluid"
-                                         style="height: 150px; width: 100%; object-fit: cover;">
+                                         style="height: 150px; width: 100%; object-fit: cover;"
+                                         onerror="this.style.display='none'">
                                 </div>
                                 {% if img.title %}
                                     <small class="text-muted d-block mt-1 text-center">{{ img.title }}</small>
@@ -124,13 +196,18 @@
             </div>
             {% endif %}
 
+            <!-- AVALIAÇÕES -->
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="card-title fw-bold text-secondary mb-0"><i class="fas fa-star me-2"></i> Avaliações</h4>
-
+                        <h4 class="card-title fw-bold text-secondary mb-0">
+                            <i class="fas fa-star me-2"></i> Avaliações
+                        </h4>
                         {% if current_user.is_authenticated and current_user.id != user.id %}
-                            <button type="button" class="btn btn-primary btn-sm px-3 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAvaliacao">
+                            <button type="button"
+                                    class="btn btn-primary btn-sm px-3 py-2 fw-bold shadow-sm rounded-pill"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalAvaliacao">
                                 <i class="fas fa-pen me-2"></i>Avaliar Serviço
                             </button>
                         {% endif %}
@@ -152,7 +229,9 @@
                                     </div>
                                 </div>
                                 <small class="text-muted d-block mb-2">{{ review.created_at.strftime('%d/%m/%Y') }}</small>
-                                <p class="text-secondary mb-0 font-italic">"{{ review.comment or 'Avaliou com estrelas sem deixar comentário por escrito.' }}"</p>
+                                <p class="text-secondary mb-0 font-italic">
+                                    "{{ review.comment or 'Avaliou com estrelas sem deixar comentário por escrito.' }}"
+                                </p>
                             </div>
                         {% endfor %}
                     {% else %}
@@ -166,23 +245,25 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalAvaliacao" tabindex="-1" aria-labelledby="modalAvaliacaoLabel" aria-hidden="true">
+<!-- ==============================================
+     MODAL DE AVALIAÇÃO
+     ============================================== -->
+<div class="modal fade" id="modalAvaliacao" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow border-0 rounded-3">
             <div class="modal-header bg-light border-0 py-3">
-                <h5 class="modal-title fw-bold text-dark" id="modalAvaliacaoLabel">Avaliar Serviço de {{ user.name }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title fw-bold text-dark" id="modalAvaliacaoLabel">
+                    Avaliar Serviço de {{ user.name }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
             <form action="{{ url_for('avaliar', provider_id=user.id) }}" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
                 <div class="modal-body py-4">
                     <div class="text-center mb-4">
                         <label class="form-label d-block fw-bold text-muted mb-2">Sua Nota:</label>
                         <div class="star-rating-wrapper fs-1 mb-2">
                             <input type="hidden" name="rating" id="rating-value" value="0" required>
-
                             <i class="far fa-star star-btn mx-1" data-value="1" style="cursor: pointer; color: #ffc107;"></i>
                             <i class="far fa-star star-btn mx-1" data-value="2" style="cursor: pointer; color: #ffc107;"></i>
                             <i class="far fa-star star-btn mx-1" data-value="3" style="cursor: pointer; color: #ffc107;"></i>
@@ -191,141 +272,222 @@
                         </div>
                         <small class="text-muted" id="rating-text">Escolha de 1 a 5 estrelas</small>
                     </div>
-
                     <div class="mb-3">
-                        <label for="comment" class="form-label fw-bold text-muted">Feedback por extenso (Opcional):</label>
-                        <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Como foi o atendimento, pontualidade e qualidade do serviço?..."></textarea>
+                        <label for="comment" class="form-label fw-bold text-muted">Feedback (Opcional):</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="4"
+                                  placeholder="Como foi o atendimento, pontualidade e qualidade do serviço?..."></textarea>
                     </div>
                 </div>
-
                 <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success px-4" id="btn-enviar-avaliacao" disabled>Enviar Avaliação</button>
+                    <button type="button" class="btn btn-secondary px-3 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-4 rounded-pill" id="btn-enviar-avaliacao" disabled>Enviar Avaliação</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- ==============================================
+     MODAL DE ORÇAMENTO
+     ============================================== -->
+<div class="modal fade" id="modalOrcamentoPerfil" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Solicitar Orçamento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <i class="fas fa-rocket fa-3x text-warning mb-3"></i>
+                <h5 class="fw-bold text-dark">🚀 Funcionalidade em Breve!</h5>
+                <p class="text-muted">
+                    Estamos desenvolvendo um sistema completo de orçamentos dentro da plataforma.
+                </p>
+                <p class="text-muted small">
+                    Por enquanto, utilize o botão <strong>"Chamar"</strong> para contato direto via WhatsApp!
+                </p>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-1"></i> Entendi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================
+     MODAL DE DENÚNCIA
+     ============================================== -->
+<div class="modal fade" id="modalDenuncia" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-flag me-2"></i>Denunciar {{ user.name }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('denunciar', user_id=user.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Sua denúncia será analisada em até <strong>48 horas</strong> pela nossa equipe.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Motivo da denúncia</label>
+                        <select name="reason" class="form-select" required onchange="toggleOutroMotivo(this.value)">
+                            <option value="">Selecione um motivo...</option>
+                            <option value="Serviço não realizado">Serviço não realizado</option>
+                            <option value="Propaganda enganosa">Propaganda enganosa</option>
+                            <option value="Preço abusivo">Preço abusivo</option>
+                            <option value="Não compareceu">Não compareceu ao serviço</option>
+                            <option value="Perfil falso">Perfil falso/suspeito</option>
+                            <option value="Conteúdo impróprio">Conteúdo impróprio</option>
+                            <option value="Assédio ou discriminação">Assédio ou discriminação</option>
+                            <option value="outro">Outro (escrever abaixo)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="div-outro-motivo" style="display: none;">
+                        <label class="form-label fw-bold small text-muted">Descreva o motivo</label>
+                        <input type="text" name="reason" class="form-control" placeholder="Descreva o motivo da denúncia...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Detalhes (opcional)</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Descreva com mais detalhes o ocorrido..."></textarea>
+                    </div>
+                    <div class="alert alert-warning border-0 rounded-3 small">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Atenção:</strong> Denúncias falsas podem resultar em penalidades para sua conta.
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill btn-sm px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger rounded-pill btn-sm px-4">
+                        <i class="fas fa-paper-plane me-1"></i> Enviar Denúncia
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- CSRF Token Hidden -->
 <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
 
+<!-- ==============================================
+     SCRIPTS
+     ============================================== -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- CONFIGURAÇÃO CSRF ---
+        const csrfToken = document.getElementById('csrf_token')?.value;
+        const requestHeaders = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        };
 
-    // --- 1. CONFIGURAÇÃO GLOBAL DO CSRF TOKEN PARA AJAX ---
-    const csrfToken = document.getElementById('csrf_token')?.value;
-    const requestHeaders = {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken
-    };
+        // --- SELEÇÃO DE ESTRELAS (MODAL DE AVALIAÇÃO) ---
+        const stars = document.querySelectorAll('.star-btn');
+        const ratingInput = document.getElementById('rating-value');
+        const ratingText = document.getElementById('rating-text');
+        const submitBtn = document.getElementById('btn-enviar-avaliacao');
 
-    // --- 2. LÓGICA DE SELEÇÃO DINÂMICA DE ESTRELAS (MODAL) ---
-    const stars = document.querySelectorAll('.star-btn');
-    const ratingInput = document.getElementById('rating-value');
-    const ratingText = document.getElementById('rating-text');
-    const submitBtn = document.getElementById('btn-enviar-avaliacao');
+        const labels = {
+            1: "Péssimo atendimento",
+            2: "Serviço insatisfatório",
+            3: "Regular / Aceitável",
+            4: "Muito bom profissional",
+            5: "Excelente! Recomendo com certeza"
+        };
 
-    const labels = {
-        1: "Péssimo atendimento",
-        2: "Serviço insatisfatório",
-        3: "Regular / Aceitável",
-        4: "Muito bom profissional",
-        5: "Excelente! Recomendo com certeza"
-    };
+        function highlightStars(value) {
+            stars.forEach(star => {
+                const starValue = star.getAttribute('data-value');
+                star.classList.toggle('fas', starValue <= value);
+                star.classList.toggle('far', starValue > value);
+            });
+        }
 
-    stars.forEach(star => {
-        star.addEventListener('mouseover', function() {
-            const hoverValue = this.getAttribute('data-value');
-            highlightStars(hoverValue);
-        });
-
-        star.addEventListener('mouseout', function() {
-            const currentValue = ratingInput.value;
-            highlightStars(currentValue);
-        });
-
-        star.addEventListener('click', function() {
-            const clickValue = this.getAttribute('data-value');
-            ratingInput.value = clickValue;
-            ratingText.innerText = labels[clickValue];
-            ratingText.className = "fw-bold text-warning";
-            submitBtn.removeAttribute('disabled');
-        });
-    });
-
-    function highlightStars(value) {
         stars.forEach(star => {
-            const starValue = star.getAttribute('data-value');
-            if (starValue <= value) {
-                star.classList.replace('far', 'fas');
-            } else {
-                star.classList.replace('fas', 'far');
-            }
+            star.addEventListener('mouseover', function () {
+                highlightStars(this.getAttribute('data-value'));
+            });
+            star.addEventListener('mouseout', function () {
+                highlightStars(ratingInput.value);
+            });
+            star.addEventListener('click', function () {
+                const value = this.getAttribute('data-value');
+                ratingInput.value = value;
+                ratingText.innerText = labels[value];
+                ratingText.className = "fw-bold text-warning";
+                submitBtn.removeAttribute('disabled');
+            });
         });
-    }
 
-    // --- 3. LÓGICA DE FAVORITAR VIA REQUISIÇÃO ASSÍNCRONA (AJAX) ---
-    const btnFavorite = document.getElementById('btn-favorite');
-    if (btnFavorite) {
-        btnFavorite.addEventListener('click', async function(e) {
-            e.preventDefault();
+        // --- FAVORITAR (AJAX) ---
+        const btnFavorite = document.getElementById('btn-favorite');
+        if (btnFavorite) {
+            btnFavorite.addEventListener('click', async function (e) {
+                e.preventDefault();
+                const providerId = this.getAttribute('data-provider-id');
+                const iconContainer = document.getElementById('favorite-icon-container');
+                const txtLabel = document.getElementById('favorite-text');
 
-            const providerId = this.getAttribute('data-provider-id');
-            const iconContainer = document.getElementById('favorite-icon-container');
-            const txtLabel = document.getElementById('favorite-text');
+                try {
+                    btnFavorite.disabled = true;
+                    const response = await fetch(`/favoritar/${providerId}`, {
+                        method: 'POST',
+                        headers: requestHeaders
+                    });
+                    const data = await response.json();
 
-            try {
-                btnFavorite.disabled = true;
-
-                const response = await fetch(`/favoritar/${providerId}`, {
-                    method: 'POST',
-                    headers: requestHeaders
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.status === 'success') {
-                    if (data.action === 'added') {
-                        this.classList.replace('btn-outline-primary', 'btn-danger');
-                        iconContainer.innerHTML = '<i class="fas fa-heart text-danger me-1"></i>';
-                        txtLabel.textContent = 'Favoritado';
-                    } else if (data.action === 'removed') {
-                        this.classList.replace('btn-danger', 'btn-outline-primary');
-                        iconContainer.innerHTML = '<i class="far fa-heart me-1"></i>';
-                        txtLabel.textContent = 'Favoritar';
+                    if (response.ok && data.status === 'success') {
+                        if (data.action === 'added') {
+                            this.classList.replace('btn-outline-primary', 'btn-danger');
+                            iconContainer.innerHTML = '<i class="fas fa-heart me-1"></i>';
+                            txtLabel.textContent = 'Favoritado';
+                        } else {
+                            this.classList.replace('btn-danger', 'btn-outline-primary');
+                            iconContainer.innerHTML = '<i class="far fa-heart me-1"></i>';
+                            txtLabel.textContent = 'Favoritar';
+                        }
+                    } else {
+                        alert(data.message || 'Erro ao atualizar favoritos.');
                     }
-                } else {
-                    alert(data.message || 'Ocorreu um erro ao atualizar seus favoritos.');
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro de conexão.');
+                } finally {
+                    btnFavorite.disabled = false;
                 }
-            } catch (error) {
-                console.error('Erro na requisição assíncrona de favorito:', error);
-                alert('Erro de conexão com o servidor.');
-            } finally {
-                btnFavorite.disabled = false;
-            }
-        });
-    }
+            });
+        }
 
-    // --- 4. LÓGICA DE HISTÓRICO: REGISTRO DE CONTATO (WHATSAPP) ---
-    const btnWhatsapp = document.getElementById('btn-whatsapp-contact');
-    if (btnWhatsapp) {
-        btnWhatsapp.addEventListener('click', async function(e) {
-            const providerId = this.getAttribute('data-provider-id');
-
-            try {
+        // --- REGISTRO DE CONTATO WHATSAPP ---
+        const btnWhatsapp = document.getElementById('btn-whatsapp-contact');
+        if (btnWhatsapp) {
+            btnWhatsapp.addEventListener('click', function () {
+                const providerId = this.getAttribute('data-provider-id');
                 fetch(`/registrar_contato/${providerId}`, {
                     method: 'POST',
                     headers: requestHeaders
-                }).then(response => {
-                    if (!response.ok) {
-                        console.warn('O servidor retornou um status não-200 no histórico de contato.');
-                    }
-                });
-            } catch (error) {
-                console.error('Falha de rede ao tentar registrar métrica de contato:', error);
-            }
-        });
+                }).catch(error => console.warn('Histórico não registrado:', error));
+            });
+        }
+    });
+
+    // --- TOGGLE OUTRO MOTIVO (DENÚNCIA) ---
+    function toggleOutroMotivo(value) {
+        const div = document.getElementById('div-outro-motivo');
+        if (value === 'outro') {
+            div.style.display = 'block';
+        } else {
+            div.style.display = 'none';
+        }
     }
-});
 </script>
 {% endblock %}

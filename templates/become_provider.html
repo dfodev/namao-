@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container" style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 2rem;">
+<div class="container"
+     style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 2rem;">
     <div class="card" style="max-width: 600px; width: 100%;" data-aos="fade-up">
         <div class="card-body p-4">
             <div class="text-center mb-4">
@@ -17,8 +18,15 @@
 
                 <div class="mb-3">
                     <label class="form-label">Sobre você / Serviços</label>
-                    {{ form.bio(class="form-control", rows="4", placeholder="Conte sobre sua experiência, serviços que oferece...") }}
+                    {{ form.bio(class="form-control", rows="4", placeholder="Conte sobre sua experiência, serviços que
+                    oferece...") }}
                     <small class="text-muted">Máximo 500 caracteres</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Cidade de atuação</label>
+                    <input type="text" name="cidade" class="form-control" value="{{ current_user.cidade or '' }}"
+                           placeholder="Ex: São Paulo">
                 </div>
 
                 <div class="mb-3">
@@ -39,7 +47,8 @@
                         Formatos: PNG, JPG, JPEG, GIF, WEBP, BMP e mais. Máx 20MB
                     </small>
                     <div id="imagePreview" class="mt-2" style="display: none;">
-                        <img id="previewImg" src="#" alt="Preview" style="max-width: 150px; max-height: 150px; border-radius: 10px;">
+                        <img id="previewImg" src="#" alt="Preview"
+                             style="max-width: 150px; max-height: 150px; border-radius: 10px;">
                     </div>
                 </div>
 
@@ -61,79 +70,79 @@
 </div>
 
 <style>
-/* Estilos adicionais para o formulário */
-.form-control:focus, .form-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 0.2rem rgba(27, 152, 224, 0.25);
-}
+    /* Estilos adicionais para o formulário */
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(27, 152, 224, 0.25);
+    }
 
-#imagePreview {
-    text-align: center;
-    padding: 10px;
-    background: var(--light);
-    border-radius: 10px;
-}
+    #imagePreview {
+        text-align: center;
+        padding: 10px;
+        background: var(--light);
+        border-radius: 10px;
+    }
 
-#previewImg {
-    border: 2px solid var(--primary);
-    padding: 3px;
-}
+    #previewImg {
+        border: 2px solid var(--primary);
+        padding: 3px;
+    }
 </style>
 
 <script>
-// Preview da imagem antes do upload
-document.getElementById('profileImage')?.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    const previewDiv = document.getElementById('imagePreview');
-    const previewImg = document.getElementById('previewImg');
+    // Preview da imagem antes do upload
+    document.getElementById('profileImage')?.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        const previewDiv = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
 
-    if (file) {
-        // Verifica o tamanho do arquivo (max 20MB)
-        if (file.size > 20 * 1024 * 1024) {
-            alert('Arquivo muito grande! Máximo 20MB.');
-            this.value = '';
+        if (file) {
+            // Verifica o tamanho do arquivo (max 20MB)
+            if (file.size > 20 * 1024 * 1024) {
+                alert('Arquivo muito grande! Máximo 20MB.');
+                this.value = '';
+                previewDiv.style.display = 'none';
+                return;
+            }
+
+            // Verifica se é imagem
+            if (!file.type.startsWith('image/')) {
+                alert('Por favor, selecione um arquivo de imagem válido.');
+                this.value = '';
+                previewDiv.style.display = 'none';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewDiv.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
             previewDiv.style.display = 'none';
-            return;
+            previewImg.src = '#';
+        }
+    });
+
+    // Validação do formulário antes de enviar
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const bio = document.querySelector('textarea[name="bio"]').value;
+        const preco = document.querySelector('input[name="preco_medio"]').value;
+
+        if (bio.length < 10) {
+            e.preventDefault();
+            alert('Por favor, descreva melhor seus serviços (mínimo 10 caracteres).');
+            return false;
         }
 
-        // Verifica se é imagem
-        if (!file.type.startsWith('image/')) {
-            alert('Por favor, selecione um arquivo de imagem válido.');
-            this.value = '';
-            previewDiv.style.display = 'none';
-            return;
+        if (!preco || preco.trim() === '') {
+            e.preventDefault();
+            alert('Por favor, informe um preço médio para seus serviços.');
+            return false;
         }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            previewImg.src = e.target.result;
-            previewDiv.style.display = 'block';
-        }
-        reader.readAsDataURL(file);
-    } else {
-        previewDiv.style.display = 'none';
-        previewImg.src = '#';
-    }
-});
-
-// Validação do formulário antes de enviar
-document.querySelector('form').addEventListener('submit', function(e) {
-    const bio = document.querySelector('textarea[name="bio"]').value;
-    const preco = document.querySelector('input[name="preco_medio"]').value;
-
-    if (bio.length < 10) {
-        e.preventDefault();
-        alert('Por favor, descreva melhor seus serviços (mínimo 10 caracteres).');
-        return false;
-    }
-
-    if (!preco || preco.trim() === '') {
-        e.preventDefault();
-        alert('Por favor, informe um preço médio para seus serviços.');
-        return false;
-    }
-
-    return true;
-});
+        return true;
+    });
 </script>
 {% endblock %}

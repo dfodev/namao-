@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- ==============================================
+         CABEÇALHO
+         ============================================== -->
+    <div class="row mb-5" data-aos="fade-up">
+        <div class="col-12">
+            <div class="dashboard-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 fw-bold text-dark"><i class="fas fa-user-circle me-2 text-primary"></i>Meu Perfil</h1>
+                    <p class="text-muted mb-0">Gerencie suas informações pessoais</p>
+                </div>
+                <div>
+                    {% if current_user.is_provider %}
+                        <span class="badge bg-success px-3 py-2 rounded-pill fs-6 shadow-sm">
+                            <i class="fas fa-briefcase me-1"></i> Prestador
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary px-3 py-2 rounded-pill fs-6 shadow-sm">
+                            <i class="fas fa-user me-1"></i> Cliente
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- ==============================================
+             COLUNA ESQUERDA - CARD DO PERFIL
+             ============================================== -->
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-5">
+                    <!-- Avatar com botão de upload -->
+                    <div class="position-relative d-inline-block mb-3">
+                        {% set avatar = current_user.profile_image if current_user.profile_image and current_user.profile_image != 'default-avatar.png' else None %}
+                        {% if avatar %}
+                            <img src="/static/{{ current_user.profile_image }}"
+                                 alt="{{ current_user.name }}"
+                                 class="rounded-circle shadow"
+                                 style="width: 130px; height: 130px; object-fit: cover; border: 3px solid var(--primary);"
+                                 id="preview-avatar">
+                        {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow"
+                                 style="width: 130px; height: 130px; background: var(--primary); border: 3px solid var(--primary);"
+                                 id="preview-avatar-default">
+                                <i class="fas fa-user fa-3x text-white"></i>
+                            </div>
+                        {% endif %}
+                        <!-- Botão de upload (câmera) -->
+                        <label for="upload-avatar" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2"
+                               style="cursor: pointer; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                            <i class="fas fa-camera fa-sm"></i>
+                        </label>
+                        <input type="file" id="upload-avatar" accept="image/*" style="display: none;" onchange="previewAvatar(event)">
+                    </div>
+
+                    <h3 class="fw-bold text-dark">{{ current_user.name }}</h3>
+                    <p class="text-muted small">
+                        <i class="fas fa-map-marker-alt me-1"></i> {{ current_user.bairro }}
+                    </p>
+
+                    {% if current_user.is_provider and current_user.trust_seal %}
+                        <span class="badge bg-success px-3 py-2 rounded-pill mb-3">
+                            <i class="fas fa-shield-alt me-1"></i> Verificado
+                        </span>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <button class="btn btn-primary btn-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fas fa-edit me-1"></i> Editar Perfil
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Status -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3"><i class="fas fa-chart-pie text-primary me-2"></i>Minha Atividade</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <span class="text-muted small"><i class="fas fa-heart text-danger me-1"></i> Favoritos</span>
+                        <span class="fw-bold text-dark">{{ current_user.favorites|length }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <span class="text-muted small"><i class="fas fa-star text-warning me-1"></i> Avaliações feitas</span>
+                        <span class="fw-bold text-dark">{{ current_user.reviews_given|length }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small"><i class="fas fa-phone-alt text-success me-1"></i> Contatos realizados</span>
+                        <span class="fw-bold text-dark">{{ current_user.contacts_made|length }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             COLUNA DIREITA - INFORMAÇÕES E AÇÕES
+             ============================================== -->
+        <div class="col-lg-8 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <!-- Informações Pessoais -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-id-card text-primary me-2"></i>Informações Pessoais</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted fw-bold">Nome completo</label>
+                            <p class="fw-bold text-dark mb-0">{{ current_user.name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted fw-bold">Email</label>
+                            <p class="fw-bold text-dark mb-0">{{ current_user.email }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted fw-bold">Cidade</label>
+                            <p class="fw-bold text-dark mb-0">{{ current_user.cidade or 'Não informada' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted fw-bold">Bairro</label>
+                            <p class="fw-bold text-dark mb-0">{{ current_user.bairro }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted fw-bold">WhatsApp</label>
+                            <p class="fw-bold text-dark mb-0">{{ current_user.telefone }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted fw-bold">Tipo de conta</label>
+                            <p class="mb-0">
+                                {% if current_user.is_provider %}
+                                    <span class="badge bg-success px-3 py-1 rounded-pill">Prestador de Serviços</span>
+                                {% else %}
+                                    <span class="badge bg-secondary px-3 py-1 rounded-pill">Cliente</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted fw-bold">Membro desde</label>
+                            <p class="fw-bold text-dark mb-0">{{ current_user.created_at.strftime('%d/%m/%Y') if current_user.created_at else 'Hoje' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-bolt text-primary me-2"></i>Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% if not current_user.is_provider %}
+                        <div class="col-md-6">
+                            <a href="{{ url_for('become_provider') }}" class="card border border-primary border-2 shadow-hover text-decoration-none">
+                                <div class="card-body p-3 text-center">
+                                    <i class="fas fa-store fa-2x text-primary mb-2"></i>
+                                    <h6 class="fw-bold text-dark mb-0">Tornar-se Prestador</h6>
+                                    <small class="text-muted">Ofereça seus serviços</small>
+                                </div>
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="col-md-6">
+                            <a href="{{ url_for('dashboard') }}" class="card border border-primary border-2 shadow-hover text-decoration-none">
+                                <div class="card-body p-3 text-center">
+                                    <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                                    <h6 class="fw-bold text-dark mb-0">Meu Dashboard</h6>
+                                    <small class="text-muted">Métricas e serviços</small>
+                                </div>
+                            </a>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-6">
+                            <a href="{{ url_for('meus_favoritos') }}" class="card border border-danger border-2 shadow-hover text-decoration-none">
+                                <div class="card-body p-3 text-center">
+                                    <i class="fas fa-heart fa-2x text-danger mb-2"></i>
+                                    <h6 class="fw-bold text-dark mb-0">Meus Favoritos</h6>
+                                    <small class="text-muted">Profissionais salvos</small>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================
+     MODAL EDITAR PERFIL
+     ============================================== -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-edit text-primary me-2"></i>Editar Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('update_profile') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Nome</label>
+                        <input type="text" name="name" class="form-control" value="{{ current_user.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Cidade</label>
+                        <input type="text" name="cidade" class="form-control" value="{{ current_user.cidade or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Bairro</label>
+                        <input type="text" name="bairro" class="form-control" value="{{ current_user.bairro or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">WhatsApp</label>
+                        <input type="tel" name="telefone" class="form-control" value="{{ current_user.telefone or '' }}" placeholder="11999999999">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill btn-sm px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-pill btn-sm px-4">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================
+     SCRIPTS
+     ============================================== -->
+<script>
+    // --- UPLOAD DE FOTO DE PERFIL ---
+    function previewAvatar(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 20 * 1024 * 1024) {
+            alert('Arquivo muito grande! Máximo 20MB.');
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            alert('Selecione um arquivo de imagem válido.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const defaultAvatar = document.getElementById('preview-avatar-default');
+            if (defaultAvatar) {
+                defaultAvatar.outerHTML = `<img src="${e.target.result}"
+                    alt="Preview"
+                    class="rounded-circle shadow"
+                    style="width: 130px; height: 130px; object-fit: cover; border: 3px solid var(--primary);"
+                    id="preview-avatar">`;
+            } else {
+                document.getElementById('preview-avatar').src = e.target.result;
+            }
+        };
+        reader.readAsDataURL(file);
+
+        uploadAvatar(file);
+    }
+
+    async function uploadAvatar(file) {
+        const formData = new FormData();
+        formData.append('profile_image', file);
+        formData.append('csrf_token', '{{ csrf_token() }}');
+
+        try {
+            const response = await fetch('/upload-profile-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+        } catch (error) {
+            console.error('Erro no upload:', error);
+            alert('Erro ao enviar a foto.');
+        }
+    }
+</script>
+{% endblock %}

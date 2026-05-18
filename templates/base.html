@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>NaMão - Serviços do seu bairro</title>
+
+    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
     <style>
-        /* Estilo para o avatar no navbar */
         .user-avatar {
             width: 35px;
             height: 35px;
@@ -18,7 +20,6 @@
             margin-right: 8px;
             border: 2px solid var(--primary);
         }
-
         .dropdown-item i {
             width: 20px;
             margin-right: 8px;
@@ -27,12 +28,16 @@
 </head>
 <body>
 
-<!-- Loader -->
+<!-- ==============================================
+     LOADER
+     ============================================== -->
 <div class="loader" id="loader">
     <div class="spinner"></div>
 </div>
 
-<!-- Navbar -->
+<!-- ==============================================
+     NAVBAR
+     ============================================== -->
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
         <a class="navbar-brand" href="{{ url_for('index') }}">
@@ -50,86 +55,92 @@
                 </li>
 
                 {% if current_user.is_authenticated %}
-                    <!-- Menu para usuários logados (com dropdown) -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            {% set avatar = current_user.profile_image if current_user.profile_image else 'default-avatar.png' %}
-                            <img src="{{ url_for('static', filename=avatar) }}"
-                                 alt="Avatar"
-                                 class="user-avatar"
-                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?background=1B98E0&color=fff&name={{ current_user.name[0] }}'">
-                            <span>{{ current_user.name.split()[0] }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <!-- Minha Conta -->
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('dashboard') }}">
-                                    <i class="fas fa-user-circle"></i> Minha Conta
-                                </a>
-                            </li>
+                <!-- Menu do Usuário Logado -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        {% set avatar = current_user.profile_image if current_user.profile_image else 'default-avatar.png' %}
+                        <img src="{{ url_for('static', filename=avatar) }}"
+                             alt="Avatar"
+                             class="user-avatar"
+                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?background=1B98E0&color=fff&name={{ current_user.name[0] }}'">
+                        <span>{{ current_user.name.split()[0] }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <!-- Meu Perfil -->
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('meu_perfil') }}">
+                                <i class="fas fa-user-circle"></i> Meu Perfil
+                            </a>
+                        </li>
 
-                            <!-- Separador -->
-                            <li><hr class="dropdown-divider"></li>
+                        <!-- Dashboard (apenas para prestadores) -->
+                        {% if current_user.is_provider %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-chart-line"></i> Meu Dashboard
+                            </a>
+                        </li>
+                        {% endif %}
 
-                            <!-- Dashboard Unificado -->
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('dashboard') }}">
-                                    <i class="fas fa-chart-line"></i> Meu Dashboard
-                                </a>
-                            </li>
+                        <li><hr class="dropdown-divider"></li>
 
-                            <!-- Meus Favoritos (para todos usuários) -->
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('meus_favoritos') }}">
-                                    <i class="fas fa-heart"></i> Meus Favoritos
-                                </a>
-                            </li>
+                        <!-- Meus Favoritos -->
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('meus_favoritos') }}">
+                                <i class="fas fa-heart"></i> Meus Favoritos
+                            </a>
+                        </li>
 
-                            <!-- Opção para se tornar prestador (se não for) -->
-                            {% if not current_user.is_provider %}
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('become_provider') }}">
-                                        <i class="fas fa-store"></i> Tornar-se Prestador
-                                    </a>
-                                </li>
-                            {% endif %}
+                        <!-- Tornar-se Prestador (se não for) -->
+                        {% if not current_user.is_provider %}
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('become_provider') }}">
+                                <i class="fas fa-store"></i> Tornar-se Prestador
+                            </a>
+                        </li>
+                        {% endif %}
 
-                            <!-- Busca Avançada -->
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('busca_avancada') }}">
-                                    <i class="fas fa-search"></i> Busca Avançada
-                                </a>
-                            </li>
+                        <li><hr class="dropdown-divider"></li>
 
-                            <!-- Sair -->
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
-                                    <i class="fas fa-sign-out-alt"></i> Sair
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                        <!-- Busca Avançada -->
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('busca_avancada') }}">
+                                <i class="fas fa-search"></i> Busca Avançada
+                            </a>
+                        </li>
+
+                        <li><hr class="dropdown-divider"></li>
+
+                        <!-- Sair -->
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt"></i> Sair
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 {% else %}
-                    <!-- Menu para usuários não logados -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}">
-                            <i class="fas fa-sign-in-alt"></i> Entrar
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('register') }}">
-                            <i class="fas fa-user-plus"></i> Cadastrar
-                        </a>
-                    </li>
+                <!-- Menu para Visitantes -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('login') }}">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('register') }}">
+                        <i class="fas fa-user-plus"></i> Cadastrar
+                    </a>
+                </li>
                 {% endif %}
             </ul>
         </div>
     </div>
 </nav>
 
-<!-- Conteúdo Principal -->
+<!-- ==============================================
+     CONTEÚDO PRINCIPAL
+     ============================================== -->
 <main class="container mt-4">
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -145,7 +156,9 @@
     {% block content %}{% endblock %}
 </main>
 
-<!-- Footer -->
+<!-- ==============================================
+     FOOTER
+     ============================================== -->
 <footer>
     <div class="container">
         <div class="row">
@@ -155,7 +168,7 @@
                 </p>
             </div>
             <div class="col-md-4 text-center mb-3 mb-md-0">
-                <small class="text-muted">© 2024 NaMão - Todos os direitos reservados</small>
+                <small class="text-muted">© 2026 NaMão - Todos os direitos reservados</small>
             </div>
             <div class="col-md-4 text-center text-md-end">
                 <a href="mailto:suport.namao@gmail.com" class="text-muted me-3">
@@ -169,26 +182,9 @@
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>
-    AOS.init({duration: 600, once: true});
-
-    window.addEventListener('load', () => {
-        const loader = document.getElementById('loader');
-        if (loader) {
-            setTimeout(() => {
-                loader.classList.add('hide');
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 300);
-            }, 300);
-        }
-    });
-</script>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
-
-<!-- Ícone de Suporte ao Cliente -->
+<!-- ==============================================
+     WIDGET DE SUPORTE
+     ============================================== -->
 <div class="support-widget">
     <button class="support-trigger" id="supportTrigger" title="Precisa de ajuda?">
         <i class="fas fa-headset"></i>
@@ -245,222 +241,173 @@
     </div>
 </div>
 
+<!-- ==============================================
+     ESTILOS DO WIDGET DE SUPORTE
+     ============================================== -->
 <style>
-/* Estilos do Widget de Suporte */
-.support-widget {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 1050;
-}
-
-.support-trigger {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: var(--primary, #1B98E0);
-    color: white;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.support-trigger:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(27, 152, 224, 0.4);
-    background: var(--primary-dark, #0d6efd);
-}
-
-.support-trigger i {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-.support-panel {
-    position: absolute;
-    bottom: 80px;
-    right: 0;
-    width: 320px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    display: none;
-    flex-direction: column;
-    overflow: hidden;
-    animation: slideUp 0.3s ease;
-}
-
-.support-panel.active {
-    display: flex;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.support-header {
-    background: var(--primary, #1B98E0);
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.support-header h5 {
-    margin: 0;
-    font-size: 16px;
-}
-
-.support-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-}
-
-.support-close:hover {
-    opacity: 0.8;
-}
-
-.support-body {
-    padding: 20px;
-}
-
-.support-option {
-    margin-bottom: 15px;
-    transition: transform 0.2s;
-}
-
-.support-option:hover {
-    transform: translateX(5px);
-}
-
-.support-link {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    color: var(--dark, #212529);
-    padding: 10px;
-    border-radius: 10px;
-    transition: background 0.2s;
-}
-
-.support-link:hover {
-    background: #f8f9fa;
-}
-
-.support-icon {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    margin-right: 15px;
-    font-size: 18px;
-    flex-shrink: 0;
-}
-
-.support-info strong {
-    display: block;
-    font-size: 14px;
-    margin-bottom: 2px;
-}
-
-.support-info small {
-    color: #6c757d;
-    font-size: 12px;
-}
-
-.support-footer {
-    padding: 12px 20px;
-    background: #f8f9fa;
-    text-align: center;
-    border-top: 1px solid #e9ecef;
-}
-
-@media (max-width: 768px) {
     .support-widget {
-        bottom: 20px;
-        right: 20px;
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1050;
     }
-
-    .support-panel {
-        width: 300px;
-    }
-
     .support-trigger {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary, #1B98E0);
+        color: white;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-}
+    .support-trigger:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(27, 152, 224, 0.4);
+        background: var(--primary-dark, #0d6efd);
+    }
+    .support-trigger i {
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    .support-panel {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 320px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideUp 0.3s ease;
+    }
+    .support-panel.active {
+        display: flex;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .support-header {
+        background: var(--primary, #1B98E0);
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .support-header h5 { margin: 0; font-size: 16px; }
+    .support-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+    .support-close:hover { opacity: 0.8; }
+    .support-body { padding: 20px; }
+    .support-option { margin-bottom: 15px; transition: transform 0.2s; }
+    .support-option:hover { transform: translateX(5px); }
+    .support-link {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: var(--dark, #212529);
+        padding: 10px;
+        border-radius: 10px;
+        transition: background 0.2s;
+    }
+    .support-link:hover { background: #f8f9fa; }
+    .support-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 15px;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .support-info strong { display: block; font-size: 14px; margin-bottom: 2px; }
+    .support-info small { color: #6c757d; font-size: 12px; }
+    .support-footer {
+        padding: 12px 20px;
+        background: #f8f9fa;
+        text-align: center;
+        border-top: 1px solid #e9ecef;
+    }
+    @media (max-width: 768px) {
+        .support-widget { bottom: 20px; right: 20px; }
+        .support-panel { width: 300px; }
+        .support-trigger { width: 50px; height: 50px; font-size: 20px; }
+    }
 </style>
 
+<!-- ==============================================
+     SCRIPTS
+     ============================================== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const supportTrigger = document.getElementById('supportTrigger');
-    const supportPanel = document.getElementById('supportPanel');
-    const supportClose = document.getElementById('supportClose');
+    AOS.init({duration: 600, once: true});
 
-    // Abrir/Fechar painel de suporte
-    supportTrigger.addEventListener('click', function() {
-        supportPanel.classList.toggle('active');
-    });
-
-    // Fechar painel
-    supportClose.addEventListener('click', function() {
-        supportPanel.classList.remove('active');
-    });
-
-    // Fechar ao clicar fora do painel
-    document.addEventListener('click', function(event) {
-        if (!supportPanel.contains(event.target) && !supportTrigger.contains(event.target)) {
-            supportPanel.classList.remove('active');
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('loader');
+        if (loader) {
+            setTimeout(() => {
+                loader.classList.add('hide');
+                setTimeout(() => { loader.style.display = 'none'; }, 300);
+            }, 300);
         }
     });
+</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 
-    // Fechar com tecla ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && supportPanel.classList.contains('active')) {
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const supportTrigger = document.getElementById('supportTrigger');
+        const supportPanel = document.getElementById('supportPanel');
+        const supportClose = document.getElementById('supportClose');
+
+        supportTrigger.addEventListener('click', function () {
+            supportPanel.classList.toggle('active');
+        });
+
+        supportClose.addEventListener('click', function () {
             supportPanel.classList.remove('active');
-        }
-    });
+        });
 
-    // FAQ (pode ser expandido futuramente)
-    document.getElementById('openFaq')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        alert('Em breve: FAQ completa do NaMão!');
+        document.addEventListener('click', function (event) {
+            if (!supportPanel.contains(event.target) && !supportTrigger.contains(event.target)) {
+                supportPanel.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && supportPanel.classList.contains('active')) {
+                supportPanel.classList.remove('active');
+            }
+        });
+
+        document.getElementById('openFaq')?.addEventListener('click', function (e) {
+            e.preventDefault();
+            alert('Em breve: FAQ completa do NaMão!');
+        });
     });
-});
 </script>
 
 </body>

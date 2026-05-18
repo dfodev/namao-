@@ -1,62 +1,154 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="filters-card" data-aos="fade-up">
-    <h3 class="mb-3"><i class="fas fa-search"></i> Busca Avançada</h3>
-    <form method="GET" class="row g-3">
-        <div class="col-md-3">
-            <input type="text" name="bairro" class="form-control" placeholder="Bairro..." value="{{ bairro }}">
-        </div>
-        <div class="col-md-3">
-            <select name="categoria" class="form-select">
-                {% for cat in categorias %}
-                    <option value="{{ cat }}" {% if categoria == cat %}selected{% endif %}>{{ cat }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <input type="number" name="preco_min" class="form-control" placeholder="Preço min" value="{{ preco_min }}">
-        </div>
-        <div class="col-md-2">
-            <input type="number" name="preco_max" class="form-control" placeholder="Preço max" value="{{ preco_max }}">
-        </div>
-        <div class="col-md-2">
-            <select name="ordenar" class="form-select">
-                <option value="">Ordenar por</option>
-                <option value="preco_asc" {% if ordenar == 'preco_asc' %}selected{% endif %}>Menor preço</option>
-                <option value="preco_desc" {% if ordenar == 'preco_desc' %}selected{% endif %}>Maior preço</option>
-                <option value="avaliacao" {% if ordenar == 'avaliacao' %}selected{% endif %}>Melhor avaliação</option>
-            </select>
-        </div>
-        <div class="col-md-12">
-            <button type="submit" class="btn btn-primary w-100">
-                <i class="fas fa-filter"></i> Buscar
-            </button>
-        </div>
-    </form>
-</div>
+<div class="container py-5">
+    <!-- ==============================================
+         FILTROS DE BUSCA AVANÇADA
+         ============================================== -->
+    <div class="filters-card mb-4" data-aos="fade-up">
+        <h3 class="mb-3 fw-bold text-dark"><i class="fas fa-search text-primary me-2"></i>Busca Avançada</h3>
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Cidade</label>
+                <input type="text" name="cidade" class="form-control" placeholder="Digite a cidade..." value="{{ cidade }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Bairro</label>
+                <input type="text" name="bairro" class="form-control" placeholder="Digite o bairro..." value="{{ bairro }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Categoria</label>
+                <select name="categoria" class="form-select">
+                    {% for cat in categorias %}
+                        <option value="{{ cat }}" {% if categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Preço mínimo</label>
+                <input type="number" name="preco_min" class="form-control" placeholder="R$" value="{{ preco_min }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Preço máximo</label>
+                <input type="number" name="preco_max" class="form-control" placeholder="R$" value="{{ preco_max }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Ordenar por</label>
+                <select name="ordenar" class="form-select">
+                    <option value="">Relevância</option>
+                    <option value="preco_asc" {% if ordenar == 'preco_asc' %}selected{% endif %}>Menor preço</option>
+                    <option value="preco_desc" {% if ordenar == 'preco_desc' %}selected{% endif %}>Maior preço</option>
+                    <option value="avaliacao" {% if ordenar == 'avaliacao' %}selected{% endif %}>Melhor avaliação</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill">
+                    <i class="fas fa-filter me-2"></i>Buscar Profissionais
+                </button>
+            </div>
+        </form>
+    </div>
 
-<div class="row">
-    {% if servicos %}
-        {% for servico in servicos %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ servico.owner.name }}</h5>
-                        <p class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ servico.owner.bairro }}</p>
-                        <p class="card-text">{{ servico.owner.bio[:80] }}...</p>
-                        <p><strong>{{ servico.preco_medio }}</strong></p>
-                        <a href="{{ url_for('perfil_publico', user_id=servico.owner.id) }}" class="btn btn-primary w-100">
-                            Ver perfil
-                        </a>
+    <!-- ==============================================
+         RESULTADOS
+         ============================================== -->
+    <div class="row">
+        {% if servicos %}
+            {% for servico in servicos %}
+                <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
+                    <div class="card border-0 shadow-sm h-100 shadow-hover">
+                        <div class="card-body p-4">
+                            <!-- Avatar + Nome -->
+                            <div class="d-flex align-items-center mb-3">
+                                {% set avatar = servico.owner.profile_image if servico.owner.profile_image else 'default-avatar.png' %}
+                                <img src="{{ url_for('static', filename=avatar) }}"
+                                     alt="{{ servico.owner.name }}"
+                                     class="rounded-circle me-3"
+                                     style="width: 50px; height: 50px; object-fit: cover; border: 2px solid var(--primary);"
+                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?background=1B98E0&color=fff&name={{ servico.owner.name[0] }}'">
+                                <div>
+                                    <h5 class="card-title mb-0">{{ servico.owner.name }}</h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ servico.owner.cidade + ' - ' if servico.owner.cidade }}{{ servico.owner.bairro }}
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Bio resumida -->
+                            <p class="card-text text-muted small">{{ servico.owner.bio[:80] }}...</p>
+
+                            <!-- Categoria + Preço -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">{{ servico.categoria }}</span>
+                                <strong class="text-success">{{ servico.preco_medio }}</strong>
+                            </div>
+
+                            <!-- BOTÕES DE AÇÃO -->
+                            <div class="d-grid gap-2">
+                                <!-- Ver Perfil Completo -->
+                                <a href="{{ url_for('perfil_publico', user_id=servico.owner.id) }}"
+                                   class="btn btn-outline-primary btn-sm rounded-pill">
+                                    <i class="fas fa-eye me-1"></i> Ver Perfil Completo
+                                </a>
+
+                                <!-- Solicitar Orçamento -->
+                                <button class="btn btn-warning btn-sm rounded-pill"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalOrcamentoBusca">
+                                    <i class="fas fa-file-invoice-dollar me-1"></i> Solicitar Orçamento
+                                </button>
+
+                                <!-- Chamar WhatsApp -->
+                                <a href="/whatsapp-redirect/{{ servico.user_id }}"
+                                   class="btn btn-success btn-sm rounded-pill" target="_blank">
+                                    <i class="fab fa-whatsapp me-1"></i> Chamar WhatsApp
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12" data-aos="fade-up">
+                <div class="text-center py-5 bg-white rounded shadow-sm">
+                    <i class="fas fa-search fa-3x text-muted mb-3 opacity-50"></i>
+                    <h5 class="fw-bold text-dark">Nenhum resultado encontrado</h5>
+                    <p class="text-muted">Tente ajustar os filtros ou buscar por outra cidade/bairro.</p>
+                </div>
             </div>
-        {% endfor %}
-    {% else %}
-        <div class="col-12">
-            <div class="alert alert-info text-center">Nenhum resultado encontrado.</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ==============================================
+     MODAL DE ORÇAMENTO (BUSCA AVANÇADA)
+     ============================================== -->
+<div class="modal fade" id="modalOrcamentoBusca" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Solicitar Orçamento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <i class="fas fa-rocket fa-3x text-warning mb-3"></i>
+                <h5 class="fw-bold text-dark">🚀 Funcionalidade em Breve!</h5>
+                <p class="text-muted">
+                    Estamos desenvolvendo um sistema completo de orçamentos dentro da plataforma.
+                </p>
+                <p class="text-muted small">
+                    Por enquanto, utilize o botão <strong>"Chamar WhatsApp"</strong> para contato direto!
+                </p>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-1"></i> Entendi
+                </button>
+            </div>
         </div>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}

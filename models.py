@@ -13,6 +13,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     bairro = db.Column(db.String(100), nullable=False)
+    cidade = db.Column(db.String(100), default='')
     telefone = db.Column(db.String(20), nullable=False)
     bio = db.Column(db.Text, default='')
     profile_image = db.Column(db.String(200), default='default-avatar.png')
@@ -22,55 +23,35 @@ class User(db.Model, UserMixin):
     is_verified = db.Column(db.Boolean, default=False)
     reset_token = db.Column(db.String(100), nullable=True)
     reset_token_expiry = db.Column(db.DateTime, nullable=True)
+    is_blocked = db.Column(db.Boolean, default=False)
 
-    # ==========================================
-    # RELACIONAMENTOS (1:1)
-    # ==========================================
+    # Relacionamentos
     service = db.relationship('Service', back_populates='owner', uselist=False, cascade='all, delete-orphan')
     availability = db.relationship('Availability', back_populates='user', uselist=False, cascade='all, delete-orphan')
-
-    # ==========================================
-    # RELACIONAMENTOS (1:N)
-    # ==========================================
-    # Portfólio
     portfolio_images = db.relationship('PortfolioImage', back_populates='user', lazy=True, cascade='all, delete-orphan')
-
-    # Avaliações
     reviews_received = db.relationship('Review', foreign_keys='Review.provider_id',
                                        back_populates='provider', lazy=True, cascade='all, delete-orphan')
     reviews_given = db.relationship('Review', foreign_keys='Review.reviewer_id',
                                     back_populates='reviewer', lazy=True, cascade='all, delete-orphan')
-
-    # Favoritos
     favorites = db.relationship('Favorite', foreign_keys='Favorite.user_id',
                                 back_populates='user', lazy=True, cascade='all, delete-orphan')
     favorited_by = db.relationship('Favorite', foreign_keys='Favorite.provider_id',
                                    back_populates='provider', lazy=True)
-
-    # Visualizações de perfil
     profile_views_received = db.relationship('ProfileView', foreign_keys='ProfileView.user_id',
                                              back_populates='user', lazy=True, cascade='all, delete-orphan')
     profile_views_made = db.relationship('ProfileView', foreign_keys='ProfileView.viewer_id',
                                          back_populates='viewer', lazy=True)
-
-    # Denúncias
     reports_made = db.relationship('Report', foreign_keys='Report.reporter_id',
                                    back_populates='reporter', lazy=True, cascade='all, delete-orphan')
     reports_received = db.relationship('Report', foreign_keys='Report.reported_id',
                                        back_populates='reported', lazy=True)
-
-    # Histórico de contatos
     contacts_made = db.relationship('ContactHistory', foreign_keys='ContactHistory.client_id',
                                     back_populates='client', lazy=True, cascade='all, delete-orphan')
     contacts_received = db.relationship('ContactHistory', foreign_keys='ContactHistory.provider_id',
                                         back_populates='provider', lazy=True)
 
-    # ==========================================
-    # PROPERTIES & ENGINES (Regras de Negócio)
-    # ==========================================
     @property
     def avg_rating(self):
-        """Calcula a média ponderada apenas de avaliações aprovadas de forma dinâmica"""
         approved_reviews = [r for r in self.reviews_received if r.status == 'approved']
         if not approved_reviews:
             return 0.0
@@ -78,22 +59,18 @@ class User(db.Model, UserMixin):
 
     @property
     def total_reviews(self):
-        """Retorna a contagem total de avaliações válidas"""
         return len([r for r in self.reviews_received if r.status == 'approved'])
 
     @property
     def total_views(self):
-        """Retorna o número total de visualizações que o perfil recebeu"""
         return len(self.profile_views_received)
 
     @property
     def total_favorites(self):
-        """Retorna quantas pessoas favoritaram este prestador"""
         return len(self.favorited_by)
 
     @property
     def total_contacts(self):
-        """Retorna quantos cliques em contato ('Falar Agora') este prestador recebeu"""
         return len(self.contacts_received)
 
 
